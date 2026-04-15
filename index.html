@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>شات 1 - العراق و العرب</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0e1a22">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="logo-container">
+            <!-- Ensure this image exists in your directory -->
+            <img src="logo.png" alt="IraqChat1 Logo">
+        </div>
+        <div class="loader"></div>
+        <div id="status-text">جاري التحميل...</div>
+    </div>
+
+    <div id="webview-container">
+        <!-- We will dynamically set the source to handle potential iframe blocks -->
+        <iframe id="main-frame" src="" allow="geolocation; microphone; camera"></iframe>
+    </div>
+
+    <div id="offline-ready">التطبيق جاهز للعمل بدون إنترنت</div>
+
+    <script>
+        const TARGET_URL = 'https://www.iraqchat1.com/';
+        const splash = document.getElementById('splash-screen');
+        const container = document.getElementById('webview-container');
+        const frame = document.getElementById('main-frame');
+
+        // Check if we are online
+        if (!navigator.onLine) {
+            document.getElementById('status-text').innerText = 'لا يوجد اتصال بالإنترنت...';
+        }
+
+        // Load the site
+        frame.addEventListener('load', () => {
+            setTimeout(() => {
+                splash.style.opacity = '0';
+                splash.style.visibility = 'hidden';
+                container.classList.add('visible');
+            }, 1500); // Luxury delay to show the splash
+        });
+
+        // Set the source
+        frame.src = TARGET_URL;
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+
+        // Fallback: If site doesn't load in iframe (X-Frame-Options)
+        // We can detect this with a timeout or by checking frame content if same-origin (here it's cross-origin)
+        // A better way is to provide a "Launch" button if nothing happens for 10 seconds.
+        setTimeout(() => {
+            if (!container.classList.contains('visible')) {
+                document.getElementById('status-text').innerText = 'نعتذر، المتصفح يمنع العرض المباشر. جارٍ التحويل...';
+                setTimeout(() => {
+                    window.location.href = TARGET_URL;
+                }, 2000);
+            }
+        }, 8000);
+    </script>
+</body>
+</html>
